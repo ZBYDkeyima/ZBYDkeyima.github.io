@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map with Grid Lines and Custom Background</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* 禁用滚动条 */
+      }
+      #map {
+        height: 100vh;
+        width: 100%;
+        background-color: #232b92; /* 设置背景颜色 */
+      }
+
+      .leaflet-container {
+        background-color: #232b92; /* 为Leaflet地图容器设置背景颜色 */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+      // 创建地图
+      var map = L.map('map').setView([51.505, -0.09], 10) // 中心点和缩放级别
+
+      // 添加OpenStreetMap图层
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map)
+
+      // 经纬度数据
+      var locations = [
+        { lat: 51.505, lng: -0.09 },
+        { lat: 51.515, lng: -0.1 },
+        { lat: 51.52, lng: -0.12 }
+        // 可以在这里添加更多经纬度数据
+      ]
+
+      // 在地图上添加标记
+      locations.forEach(function (location) {
+        var marker = L.marker([location.lat, location.lng]).addTo(map)
+        marker.bindPopup('纬度: ' + location.lat + ', 经度: ' + location.lng)
+      })
+
+      // 网格线参数
+      var latStep = 0.01 // 纬度步长
+      var lngStep = 0.01 // 经度步长
+      var bounds = map.getBounds() // 获取地图的边界
+      var minLat = Math.floor(bounds.getSouth() / latStep) * latStep
+      var maxLat = Math.ceil(bounds.getNorth() / latStep) * latStep
+      var minLng = Math.floor(bounds.getWest() / lngStep) * lngStep
+      var maxLng = Math.ceil(bounds.getEast() / lngStep) * lngStep
+
+      // 绘制纬线
+      for (var lat = minLat; lat <= maxLat; lat += latStep) {
+        L.polyline(
+          [
+            [lat, minLng],
+            [lat, maxLng]
+          ],
+          {
+            color: 'gray',
+            weight: 1,
+            opacity: 0.5
+          }
+        ).addTo(map)
+      }
+
+      // 绘制经线
+      for (var lng = minLng; lng <= maxLng; lng += lngStep) {
+        L.polyline(
+          [
+            [minLat, lng],
+            [maxLat, lng]
+          ],
+          {
+            color: 'gray',
+            weight: 1,
+            opacity: 0.5
+          }
+        ).addTo(map)
+      }
+
+      // 当地图视图改变时重新绘制网格线
+      map.on('moveend', function () {
+        map.eachLayer(function (layer) {
+          if (layer instanceof L.Polyline && !layer.options.popup) {
+            map.removeLayer(layer)
+          }
+        })
+
+        bounds = map.getBounds()
+        minLat = Math.floor(bounds.getSouth() / latStep) * latStep
+        maxLat = Math.ceil(bounds.getNorth() / latStep) * latStep
+        minLng = Math.floor(bounds.getWest() / lngStep) * lngStep
+        maxLng = Math.ceil(bounds.getEast() / lngStep) * lngStep
+
+        for (var lat = minLat; lat <= maxLat; lat += latStep) {
+          L.polyline(
+            [
+              [lat, minLng],
+              [lat, maxLng]
+            ],
+            {
+              color: 'gray',
+              weight: 1,
+              opacity: 0.5
+            }
+          ).addTo(map)
+        }
+
+        for (var lng = minLng; lng <= maxLng; lng += lngStep) {
+          L.polyline(
+            [
+              [minLat, lng],
+              [maxLat, lng]
+            ],
+            {
+              color: 'gray',
+              weight: 1,
+              opacity: 0.5
+            }
+          ).addTo(map)
+        }
+      })
+    </script>
+  </body>
+</html>
